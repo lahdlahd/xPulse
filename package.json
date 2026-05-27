@@ -1,0 +1,53 @@
+{
+  "name": "fanxpulse",
+  "version": "0.1.0",
+  "description": "World Cup Fan Token + Match Momentum - Uniswap V4 Hooks on X Layer",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "dependencies": {
+    "@rainbow-me/rainbowkit": "^2.1.5",
+    "@tanstack/react-query": "^5.100.14",
+    "@wagmi/connectors": "^5.1.13",
+    "@wagmi/core": "^2.13.3",
+    "axios": "^1.7.7",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.1",
+    "framer-motion": "^11.3.0",
+    "next": "^15.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "recharts": "^2.12.7",
+    "tailwind-merge": "^2.4.0",
+    "viem": "^2.21.48",
+    "wagmi": "^2.13.3",
+    "zustand": "^4.5.5"
+  },
+  "devDependencies": {
+    "@ponder/core": "^0.7.17",
+    "@types/node": "^20.14.11",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^15.0.0",
+    "eslint-plugin-react": "^7.36.1",
+    "eslint-plugin-react-hooks": "^4.6.2",
+    "postcss": "^8.4.40",
+    "prettier": "^3.3.3",
+    "tailwindcss": "^3.4.7",
+    "typescript": "^5.6.2"
+  },
+  "engines": {
+    "node": ">=18.17"
+  }
+}

@@ -1,0 +1,7 @@
+# Vercel ignores
+contracts/
+ponder/
+.env*
+.git
+dist/
+coverage/

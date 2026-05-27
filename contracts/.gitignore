@@ -1,0 +1,30 @@
+# Foundry
+out/
+cache/
+broadcast/
+lib/forge-std
+lib/openzeppelin-contracts
+
+# Python
+__pycache__
+*.pyc
+.pytest_cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Artifacts
+*.abi
+*.json

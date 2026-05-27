@@ -1,0 +1,61 @@
+# Dependencies
+node_modules/
+pnpm-lock.yaml
+yarn.lock
+package-lock.json
+
+# Production Build
+.next/
+out/
+dist/
+build/
+
+# Environment
+.env
+.env.local
+.env.local.*
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.orig
+
+# Tests
+coverage/
+.nyc_output/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Vercel
+.vercel
+
+# Local development keys and secrets
+.secret*
+secrets/
+
+# Cache
+.eslintcache
+.turbo
+
+# Contracts
+artifacts/
+cache/
+.foundry/
+
+# IDE Specific
+.vscode/settings.json
+.vscode/extensions.json

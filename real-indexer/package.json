@@ -1,0 +1,18 @@
+{
+  "name": "xpulse-event-listener",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch listener.js",
+    "start": "node listener.js",
+    "graphql": "node graphql-server.js",
+    "graphql:watch": "node --watch graphql-server.js"
+  },
+  "dependencies": {
+    "@apollo/server": "^4.10.0",
+    "express": "^4.18.2",
+    "graphql": "^16.8.0",
+    "graphql-tag": "^2.12.6",
+    "viem": "^2.0.0"
+  }
+}
