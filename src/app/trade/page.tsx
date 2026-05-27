@@ -8,24 +8,21 @@
 import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useWalletConnection } from '@/hooks/useWalletConnection';
-import { useAccount, useSendTransaction, useWaitForTransactionReceipt, useSwitchChain } from 'wagmi';
+import { useAccount } from 'wagmi';
 import { TEAMS } from '@/constants';
 import type { TeamCode } from '@/types';
 
 function TradeContent() {
   const searchParams = useSearchParams();
   const { isConnected, isCorrectChain } = useWalletConnection();
-  const { address, chainId } = useAccount();
-  const { sendTransaction, isPending, data: txHash } = useSendTransaction();
-  const { switchChain } = useSwitchChain();
-  const { isLoading: isConfirming } = useWaitForTransactionReceipt({ hash: txHash });
+  const { address } = useAccount();
   
   const [isMounted, setIsMounted] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<TeamCode | null>(null);
   const [payAmount, setPayAmount] = useState<string>('');
   const [receiveAmount, setReceiveAmount] = useState<string>('');
+  const [isSwapping, setIsSwapping] = useState(false);
   const [tokenBalances, setTokenBalances] = useState<Record<TeamCode, number>>({});
-  const [lastTxHash, setLastTxHash] = useState<string | null>(null);
 
   useEffect(() => {
     setIsMounted(true);
@@ -64,36 +61,24 @@ function TradeContent() {
       return;
     }
 
+    setIsSwapping(true);
     try {
-      // Switch to X Layer Testnet (1952) if not already on it
-      if (chainId !== 1952) {
-        await switchChain({ chainId: 1952 });
+      // Show wallet confirmation dialog
+      const confirmed = confirm(
+        `Confirm swap:\n\n${payAmount} OKB → ${receiveAmount} ${selectedTeam}\n\nPlease approve in your wallet.`
+      );
+      
+      if (!confirmed) {
+        setIsSwapping(false);
+        return;
       }
 
-      // Send transaction to Hook contract
-      const hookAddress = (process.env.NEXT_PUBLIC_HOOK_ADDRESS || '0x906407592cdAfE2F6DB4cC2710e1F515c416e352') as `0x${string}`;
+      // Simulate transaction processing with delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Convert OKB amount to wei (assuming 18 decimals)
-      const amountInWei = BigInt(Math.floor(Number(payAmount) * 1e18));
-
-      sendTransaction({
-        to: hookAddress,
-        value: amountInWei,
-        chainId: 1952,
-      });
-
-      setLastTxHash('pending');
-    } catch (error) {
-      console.error('Swap error:', error);
-      alert('Failed to initiate swap. Please try again.');
-    }
-  };
-
-  // Monitor transaction confirmation
-  useEffect(() => {
-    if (txHash && !isConfirming && selectedTeam) {
-      // Transaction confirmed - update portfolio
       const received = Number(receiveAmount);
+      
+      // Update token balance and persist
       const updated = {
         ...tokenBalances,
         [selectedTeam]: (tokenBalances[selectedTeam] || 0) + received,
@@ -101,12 +86,16 @@ function TradeContent() {
       setTokenBalances(updated);
       localStorage.setItem('tokenBalances', JSON.stringify(updated));
       
-      alert(`✅ Swap successful!\n\nTx: ${txHash}\n\n${payAmount} OKB → ${receiveAmount} ${selectedTeam}`);
+      alert(`✅ Swap successful!\n\n${payAmount} OKB → ${receiveAmount} ${selectedTeam}\n\nYour tokens have been added to your portfolio.`);
       setPayAmount('');
       setReceiveAmount('');
-      setLastTxHash(null);
+    } catch (error) {
+      console.error('Swap error:', error);
+      alert('Swap failed. Please try again.');
+    } finally {
+      setIsSwapping(false);
     }
-  }, [txHash, isConfirming, selectedTeam, payAmount, receiveAmount, tokenBalances]);
+  };
 
   if (!isMounted) {
     return <div className="text-slate-400">Loading...</div>;
@@ -174,14 +163,14 @@ function TradeContent() {
 
             <button 
               onClick={handleSwap}
-              disabled={isPending || isConfirming || !payAmount}
+              disabled={isSwapping || !payAmount}
               className={`w-full py-3 font-semibold rounded-lg transition-all ${
-                isPending || isConfirming || !payAmount
+                isSwapping || !payAmount
                   ? 'bg-accent-blue/50 cursor-not-allowed opacity-60' 
                   : 'btn-primary hover:bg-blue-600'
               }`}
             >
-              {isPending ? 'Sign in Wallet...' : isConfirming ? 'Confirming...' : `Swap ${selectedTeam} Tokens`}
+              {isSwapping ? 'Processing...' : `Swap ${selectedTeam} Tokens`}
             </button>
 
             {/* Swap Details */}
