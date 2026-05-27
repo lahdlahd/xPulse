@@ -8,15 +8,28 @@ export default createConfig({
     },
   },
   contracts: {
-    FanXPulseHook: {
+    SwapRecorder: {
       network: "xlayerTestnet",
-      address: process.env.HOOK_ADDRESS || "0xc70691c9eE72fe74dCaecD287258816d134C51FC",
+      address: process.env.SWAP_RECORDER_ADDRESS || "0x31A125c28dE06309D84dE7f6A386548e1f7060b8",
       abi: `[
+        {
+          "type": "event",
+          "name": "SwapExecuted",
+          "inputs": [
+            { "name": "trader", "type": "address", "indexed": true },
+            { "name": "teamToken", "type": "address", "indexed": true },
+            { "name": "teamCode", "type": "string", "indexed": true },
+            { "name": "okbAmount", "type": "uint256", "indexed": false },
+            { "name": "tokenAmount", "type": "uint256", "indexed": false },
+            { "name": "timestamp", "type": "uint256", "indexed": false }
+          ]
+        },
         {
           "type": "event",
           "name": "MomentumChanged",
           "inputs": [
-            { "name": "team", "type": "address", "indexed": true },
+            { "name": "teamToken", "type": "address", "indexed": true },
+            { "name": "teamCode", "type": "string", "indexed": true },
             { "name": "oldMomentum", "type": "uint256", "indexed": false },
             { "name": "newMomentum", "type": "uint256", "indexed": false },
             { "name": "timestamp", "type": "uint256", "indexed": false }
@@ -26,26 +39,15 @@ export default createConfig({
           "type": "event",
           "name": "SupporterPointsAwarded",
           "inputs": [
-            { "name": "supporter", "type": "address", "indexed": true },
-            { "name": "team", "type": "address", "indexed": true },
+            { "name": "trader", "type": "address", "indexed": true },
+            { "name": "teamToken", "type": "address", "indexed": true },
+            { "name": "teamCode", "type": "string", "indexed": true },
             { "name": "points", "type": "uint256", "indexed": false },
-            { "name": "timestamp", "type": "uint256", "indexed": false }
-          ]
-        },
-        {
-          "type": "event",
-          "name": "SwapExecuted",
-          "inputs": [
-            { "name": "teamA", "type": "address", "indexed": true },
-            { "name": "teamB", "type": "address", "indexed": true },
-            { "name": "amount0In", "type": "uint256", "indexed": false },
-            { "name": "amount1In", "type": "uint256", "indexed": false },
-            { "name": "amount0Out", "type": "uint256", "indexed": false },
-            { "name": "amount1Out", "type": "uint256", "indexed": false },
             { "name": "timestamp", "type": "uint256", "indexed": false }
           ]
         }
       ]`,
+      startBlock: 0,
     },
   },
 });
