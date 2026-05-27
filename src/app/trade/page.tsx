@@ -8,15 +8,16 @@
 import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useWalletConnection } from '@/hooks/useWalletConnection';
-import { useAccount, useSendTransaction, useWaitForTransactionReceipt } from 'wagmi';
+import { useAccount, useSendTransaction, useWaitForTransactionReceipt, useSwitchChain } from 'wagmi';
 import { TEAMS } from '@/constants';
 import type { TeamCode } from '@/types';
 
 function TradeContent() {
   const searchParams = useSearchParams();
   const { isConnected, isCorrectChain } = useWalletConnection();
-  const { address } = useAccount();
+  const { address, chainId } = useAccount();
   const { sendTransaction, isPending, data: txHash } = useSendTransaction();
+  const { switchChain } = useSwitchChain();
   const { isLoading: isConfirming } = useWaitForTransactionReceipt({ hash: txHash });
   
   const [isMounted, setIsMounted] = useState(false);
@@ -64,8 +65,12 @@ function TradeContent() {
     }
 
     try {
+      // Switch to X Layer Testnet (1952) if not already on it
+      if (chainId !== 1952) {
+        await switchChain({ chainId: 1952 });
+      }
+
       // Send transaction to Hook contract
-      // This will open the user's wallet and prompt them to sign
       const hookAddress = (process.env.NEXT_PUBLIC_HOOK_ADDRESS || '0x906407592cdAfE2F6DB4cC2710e1F515c416e352') as `0x${string}`;
       
       // Convert OKB amount to wei (assuming 18 decimals)
@@ -74,9 +79,9 @@ function TradeContent() {
       sendTransaction({
         to: hookAddress,
         value: amountInWei,
+        chainId: 1952,
       });
 
-      // Store for tracking
       setLastTxHash('pending');
     } catch (error) {
       console.error('Swap error:', error);
