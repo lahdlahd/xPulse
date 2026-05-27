@@ -4,6 +4,7 @@ pragma solidity ^0.8.26;
 import "forge-std/Script.sol";
 import "../src/FanToken.sol";
 import "../src/FanXPulseHook.sol";
+import "../src/SwapRecorder.sol";
 
 /**
  * @title DeployScript
@@ -14,6 +15,7 @@ import "../src/FanXPulseHook.sol";
  */
 contract DeployScript is Script {
     FanXPulseHook public hook;
+    SwapRecorder public swapRecorder;
     FanToken[] public teamTokens;
 
     function run() external {
@@ -22,6 +24,10 @@ contract DeployScript is Script {
         // Deploy the main hook
         hook = new FanXPulseHook();
         console.log("FanXPulseHook deployed at:", address(hook));
+
+        // Deploy SwapRecorder
+        swapRecorder = new SwapRecorder();
+        console.log("SwapRecorder deployed at:", address(swapRecorder));
 
         // Deploy fan tokens for all 32 World Cup teams
         string[32] memory teamNames = [
@@ -54,11 +60,22 @@ contract DeployScript is Script {
                 1_000_000
             );
             teamTokens.push(token);
+            
+            // Set SwapRecorder as minter
+            token.setMinter(address(swapRecorder));
+            
+            // Register team with Hook
             hook.registerTeam(address(token), teamCodes[i]);
+            
+            // Register team with SwapRecorder
+            swapRecorder.registerTeam(address(token), teamCodes[i]);
         }
 
         vm.stopBroadcast();
 
-        console.log("Deployment complete! All 32 teams deployed.");
+        console.log("Deployment complete!");
+        console.log("SwapRecorder address:", address(swapRecorder));
+        console.log("All 32 teams deployed with SwapRecorder as minter.");
     }
 }
+

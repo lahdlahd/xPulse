@@ -77,6 +77,7 @@ abstract contract ERC20 {
  */
 contract FanToken is ERC20 {
     address public owner;
+    address public minter; // SwapRecorder or other authorized contract
     string public teamCode; // ARG, BRA, ENG, FRA, ESP
     uint256 public swapCount; // Tracks number of swaps
     uint256 public totalVolume; // Total swap volume in this token
@@ -99,10 +100,23 @@ contract FanToken is ERC20 {
         _;
     }
 
+    modifier onlyMinter() {
+        require(msg.sender == minter || msg.sender == owner, "Only minter");
+        _;
+    }
+
     /**
-     * @dev Mint tokens (only owner, used during initial distribution)
+     * @dev Set authorized minter (e.g., SwapRecorder contract)
      */
-    function mint(address to, uint256 amount) public override onlyOwner {
+    function setMinter(address _minter) external onlyOwner {
+        require(_minter != address(0), "Invalid minter address");
+        minter = _minter;
+    }
+
+    /**
+     * @dev Mint tokens (owner or authorized minter like SwapRecorder)
+     */
+    function mint(address to, uint256 amount) public override onlyMinter {
         require(to != address(0), "Invalid address");
         balanceOf[to] += amount;
         totalSupply += amount;

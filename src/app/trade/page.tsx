@@ -8,20 +8,22 @@
 import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useWalletConnection } from '@/hooks/useWalletConnection';
-import { useAccount } from 'wagmi';
+import { useAccount, useSendTransaction, useWaitForTransactionReceipt } from 'wagmi';
 import { TEAMS } from '@/constants';
+import { getTeamTokenAddress } from '@/lib/teamTokens';
 import type { TeamCode } from '@/types';
 
 function TradeContent() {
   const searchParams = useSearchParams();
   const { isConnected, isCorrectChain } = useWalletConnection();
   const { address } = useAccount();
+  const { sendTransaction, isPending, data: txHash } = useSendTransaction();
+  const { isLoading: isConfirming } = useWaitForTransactionReceipt({ hash: txHash });
   
   const [isMounted, setIsMounted] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<TeamCode | null>(null);
   const [payAmount, setPayAmount] = useState<string>('');
   const [receiveAmount, setReceiveAmount] = useState<string>('');
-  const [isSwapping, setIsSwapping] = useState(false);
   const [tokenBalances, setTokenBalances] = useState<Record<TeamCode, number>>({});
 
   useEffect(() => {
@@ -61,24 +63,46 @@ function TradeContent() {
       return;
     }
 
-    setIsSwapping(true);
     try {
-      // Show wallet confirmation dialog
-      const confirmed = confirm(
-        `Confirm swap:\n\n${payAmount} OKB → ${receiveAmount} ${selectedTeam}\n\nPlease approve in your wallet.`
-      );
+      const swapRecorderAddress = (process.env.NEXT_PUBLIC_SWAP_RECORDER_ADDRESS || '') as `0x${string}`;
       
-      if (!confirmed) {
-        setIsSwapping(false);
+      if (!swapRecorderAddress || swapRecorderAddress === '') {
+        alert('SwapRecorder contract not configured. Deploy contracts first.');
         return;
       }
 
-      // Simulate transaction processing with delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Get team token address
+      const teamTokenAddress = getTeamTokenAddress(selectedTeam);
       
+      if (!teamTokenAddress || teamTokenAddress === '0x') {
+        alert(`Token address for ${selectedTeam} not configured`);
+        return;
+      }
+
+      // Convert OKB amount to wei (1 OKB = 1e18 wei)
+      const amountInWei = BigInt(Math.floor(Number(payAmount) * 1e18)).toString();
+
+      // Encode swap(address) function call
+      // Function selector for swap(address) = 0x312fec05
+      const encodedData = (`0x312fec05${teamTokenAddress.slice(2).padStart(64, '0')}`) as `0x${string}`;
+
+      sendTransaction({
+        to: swapRecorderAddress,
+        value: BigInt(amountInWei),
+        data: encodedData,
+      });
+
+    } catch (error) {
+      console.error('Swap error:', error);
+      alert('Failed to initiate swap. Please try again.');
+    }
+  };
+
+  // Monitor transaction confirmation
+  useEffect(() => {
+    if (txHash && !isConfirming && selectedTeam) {
+      // Transaction confirmed - update portfolio
       const received = Number(receiveAmount);
-      
-      // Update token balance and persist
       const updated = {
         ...tokenBalances,
         [selectedTeam]: (tokenBalances[selectedTeam] || 0) + received,
@@ -86,16 +110,11 @@ function TradeContent() {
       setTokenBalances(updated);
       localStorage.setItem('tokenBalances', JSON.stringify(updated));
       
-      alert(`✅ Swap successful!\n\n${payAmount} OKB → ${receiveAmount} ${selectedTeam}\n\nYour tokens have been added to your portfolio.`);
+      alert(`✅ Swap successful!\n\nTx: ${txHash}\n\n${payAmount} OKB → ${receiveAmount} ${selectedTeam}`);
       setPayAmount('');
       setReceiveAmount('');
-    } catch (error) {
-      console.error('Swap error:', error);
-      alert('Swap failed. Please try again.');
-    } finally {
-      setIsSwapping(false);
     }
-  };
+  }, [txHash, isConfirming, selectedTeam, payAmount, receiveAmount, tokenBalances]);
 
   if (!isMounted) {
     return <div className="text-slate-400">Loading...</div>;
@@ -163,14 +182,14 @@ function TradeContent() {
 
             <button 
               onClick={handleSwap}
-              disabled={isSwapping || !payAmount}
+              disabled={isPending || isConfirming || !payAmount}
               className={`w-full py-3 font-semibold rounded-lg transition-all ${
-                isSwapping || !payAmount
+                isPending || isConfirming || !payAmount
                   ? 'bg-accent-blue/50 cursor-not-allowed opacity-60' 
                   : 'btn-primary hover:bg-blue-600'
               }`}
             >
-              {isSwapping ? 'Processing...' : `Swap ${selectedTeam} Tokens`}
+              {isPending ? 'Sign in Wallet...' : isConfirming ? 'Confirming...' : `Swap ${selectedTeam} Tokens`}
             </button>
 
             {/* Swap Details */}
