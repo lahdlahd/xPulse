@@ -94,36 +94,6 @@ const HeroSection: React.FC = () => {
             </div>
           </motion.div>
         </motion.div>
-
-        {/* Right Side - Visual */}
-        <motion.div variants={itemVariants} className="relative">
-          <div className="relative">
-            {/* Animated Cards */}
-            <div className="absolute top-0 right-0 w-64 h-48 bg-gradient-to-br from-accent-blue/20 to-accent-gold/20 rounded-2xl border border-accent-blue/30 p-6 shadow-glass">
-              <div className="text-4xl mb-4">⚽</div>
-              <p className="text-slate-300 text-sm font-semibold">Argentina</p>
-              <p className="text-slate-400 text-xs">Momentum: 85%</p>
-            </div>
-
-            <div className="absolute bottom-0 left-0 w-64 h-48 bg-gradient-to-br from-accent-emerald/20 to-accent-gold/20 rounded-2xl border border-accent-gold/30 p-6 shadow-glass">
-              <div className="text-4xl mb-4">🎯</div>
-              <p className="text-slate-300 text-sm font-semibold">Your Rewards</p>
-              <p className="text-slate-400 text-xs">1,250 Points</p>
-            </div>
-
-            <div className="relative z-10 mx-auto w-72 h-96 bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-2xl border border-slate-700 flex flex-col items-center justify-center text-center p-6 shadow-glass">
-              <motion.div
-                animate={{ scale: [1, 1.05, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="text-6xl mb-4"
-              >
-                📊
-              </motion.div>
-              <p className="text-slate-300 font-semibold">Live Momentum</p>
-              <p className="text-slate-400 text-sm">Real-time updates</p>
-            </div>
-          </div>
-        </motion.div>
       </div>
     </motion.section>
   );
