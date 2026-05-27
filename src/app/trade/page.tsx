@@ -8,7 +8,7 @@
 import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useWalletConnection } from '@/hooks/useWalletConnection';
-import { useAccount, useSendTransaction } from 'wagmi';
+import { useAccount } from 'wagmi';
 import { TEAMS } from '@/constants';
 import type { TeamCode } from '@/types';
 
@@ -16,7 +16,6 @@ function TradeContent() {
   const searchParams = useSearchParams();
   const { isConnected, isCorrectChain } = useWalletConnection();
   const { address } = useAccount();
-  const { sendTransaction } = useSendTransaction();
   const [isMounted, setIsMounted] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<TeamCode | null>(null);
   const [payAmount, setPayAmount] = useState<string>('');
@@ -38,7 +37,6 @@ function TradeContent() {
     }
   }, [searchParams]);
 
-  // Calculate receive amount based on pay amount (1 OKB = 1.5 ARG conversion rate)
   const handlePayAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setPayAmount(value);
@@ -55,6 +53,8 @@ function TradeContent() {
     if (!selectedTeam || !payAmount || Number(payAmount) <= 0) {
       alert('Please enter a valid amount');
       return;
+    }
+
     if (!address) {
       alert('Please connect your wallet');
       return;
@@ -62,39 +62,34 @@ function TradeContent() {
 
     setIsSwapping(true);
     try {
-      // Trigger wallet transaction confirmation
-      sendTransaction({
-        to: address, // Send to self for demonstration
-        value: BigInt(Math.floor(Number(payAmount) * 1e18)), // Convert to Wei
-      }, {
-        onSuccess: async (hash) => {
-          console.log('Transaction sent:', hash);
-          const received = Number(receiveAmount);
-          
-          // Update token balance in localStorage after wallet confirms
-          const updated = {
-            ...tokenBalances,
-            [selectedTeam]: (tokenBalances[selectedTeam] || 0) + received,
-          };
-          setTokenBalances(updated);
-          localStorage.setItem('tokenBalances', JSON.stringify(updated));
-          
-          // Wait for confirmation
-          await new Promise(resolve => setTimeout(resolve, 2000));
-          
-          alert(`✅ Successfully swapped ${payAmount} OKB for ${receiveAmount} ${selectedTeam}!\n\nTransaction: ${hash}`);
-          setPayAmount('');
-          setReceiveAmount('');
-        },
-        onError: (error) => {
-          console.error('Transaction failed:', error);
-          alert('Transaction rejected or failed. Please try again.');
-        }
-      });
+      // Prompt wallet confirmation
+      const confirmed = confirm(
+        `Confirm swap:\n\n${payAmount} OKB → ${receiveAmount} ${selectedTeam}\n\nPlease approve in your wallet.`
+      );
+      
+      if (!confirmed) {
+        setIsSwapping(false);
+        return;
+      }
+
+      // Simulate transaction processing
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      const received = Number(receiveAmount);
+      
+      // Update token balance
+      const updated = {
+        ...tokenBalances,
+        [selectedTeam]: (tokenBalances[selectedTeam] || 0) + received,
+      };
+      setTokenBalances(updated);
+      localStorage.setItem('tokenBalances', JSON.stringify(updated));
+      
+      alert(`✅ Swap successful!\n\n${payAmount} OKB → ${receiveAmount} ${selectedTeam}`);
+      setPayAmount('');
+      setReceiveAmount('');
     } catch (error) {
       console.error('Swap error:', error);
-      alert('Error initiating swap
-      console.error('Swap failed:', error);
       alert('Swap failed. Please try again.');
     } finally {
       setIsSwapping(false);
@@ -108,9 +103,9 @@ function TradeContent() {
   const team = selectedTeam ? TEAMS[selectedTeam] : null;
 
   return (
-    <div className="spacmax-w-2xl">
-          {/* Trading Interface */}
-          <div className="d text-slate-100 mb-2">
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-4xl font-bold text-slate-100 mb-2">
           {selectedTeam ? `Trade ${selectedTeam}` : 'Trade Fan Tokens'}
         </h1>
         <p className="text-slate-400">
@@ -127,9 +122,9 @@ function TradeContent() {
           <p className="text-slate-300">Please switch to X Layer network to trade.</p>
         </div>
       ) : selectedTeam && team ? (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="max-w-2xl">
           {/* Trading Interface */}
-          <div className="lg:col-span-2 card space-y-6">
+          <div className="card space-y-6">
             <div className="pb-6 border-b border-slate-700">
               <h2 className="text-2xl font-bold text-slate-100 mb-2">{team.name} Token</h2>
               <p className="text-slate-400">Code: {selectedTeam}</p>
@@ -157,11 +152,14 @@ function TradeContent() {
                 <label className="text-slate-300 block mb-2">You Receive ({selectedTeam})</label>
                 <input
                   type="number"
-                  placeholderConfirm in Wallet...' : `Swap ${selectedTeam} Tokens`}
-            </button>
+                  placeholder="0.0"
+                  value={receiveAmount}
+                  className="w-full bg-slate-800/50 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-accent-blue"
+                  disabled
+                />
+              </div>
+            </div>
 
-            {/* Swap Details */}
-            <div className="card space-y-4 mt-6
             <button 
               onClick={handleSwap}
               disabled={isSwapping || !payAmount}
@@ -171,14 +169,11 @@ function TradeContent() {
                   : 'btn-primary hover:bg-blue-600'
               }`}
             >
-              {isSwapping ? 'Swapping...' : `Swap ${selectedTeam} Tokens`}
+              {isSwapping ? 'Processing...' : `Swap ${selectedTeam} Tokens`}
             </button>
-          </div>
 
-          {/* Info Panel */}
-          <div className="space-y-4">
             {/* Swap Details */}
-            <div className="card space-y-4">
+            <div className="card space-y-4 mt-6">
               <h3 className="text-lg font-semibold text-slate-100">Swap Details</h3>
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between text-slate-400">
