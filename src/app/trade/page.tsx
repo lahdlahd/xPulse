@@ -9,9 +9,20 @@ import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useWalletConnection } from '@/hooks/useWalletConnection';
 import { useAccount, useSendTransaction, useWaitForTransactionReceipt } from 'wagmi';
+import { encodeFunctionData } from 'viem';
 import { TEAMS } from '@/constants';
 import { getTeamTokenAddress } from '@/lib/teamTokens';
 import type { TeamCode } from '@/types';
+
+const SWAP_RECORDER_ABI = [
+  {
+    type: 'function',
+    name: 'swap',
+    stateMutability: 'payable',
+    inputs: [{ name: 'teamToken', type: 'address' }],
+    outputs: [],
+  },
+] as const;
 
 function TradeContent() {
   const searchParams = useSearchParams();
@@ -82,9 +93,11 @@ function TradeContent() {
       // Convert OKB amount to wei (1 OKB = 1e18 wei)
       const amountInWei = BigInt(Math.floor(Number(payAmount) * 1e18)).toString();
 
-      // Encode swap(address) function call
-      // Function selector for swap(address) = 0x312fec05
-      const encodedData = (`0x312fec05${teamTokenAddress.slice(2).padStart(64, '0')}`) as `0x${string}`;
+      const encodedData = encodeFunctionData({
+        abi: SWAP_RECORDER_ABI,
+        functionName: 'swap',
+        args: [teamTokenAddress],
+      });
 
       sendTransaction({
         to: swapRecorderAddress,
