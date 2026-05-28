@@ -5,7 +5,7 @@
 
 'use client';
 
-import React, { useEffect, useState, Suspense } from 'react';
+import React, { useEffect, useRef, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useWalletConnection } from '@/hooks/useWalletConnection';
 import { useAccount, useSendTransaction, useWaitForTransactionReceipt } from 'wagmi';
@@ -36,6 +36,7 @@ function TradeContent() {
   const [payAmount, setPayAmount] = useState<string>('');
   const [receiveAmount, setReceiveAmount] = useState<string>('');
   const [tokenBalances, setTokenBalances] = useState<Record<TeamCode, number>>({});
+  const processedTxHashRef = useRef<`0x${string}` | null>(null);
 
   useEffect(() => {
     setIsMounted(true);
@@ -113,29 +114,41 @@ function TradeContent() {
 
   // Monitor transaction confirmation
   useEffect(() => {
-    if (txHash && !isConfirming && selectedTeam) {
-      // Transaction confirmed - update portfolio
-      const received = Number(receiveAmount);
-      const updated = {
-        ...tokenBalances,
-        [selectedTeam]: (tokenBalances[selectedTeam] || 0) + received,
-      };
-      setTokenBalances(updated);
-      localStorage.setItem('tokenBalances', JSON.stringify(updated));
-      
-      alert(`✅ Swap successful!\n\nTx: ${txHash}\n\n${payAmount} OKB → ${receiveAmount} ${selectedTeam}`);
-      // Notify other parts of the app (teams/leaderboard) to refresh on-chain stats
-      try {
-        if (typeof window !== 'undefined') {
-          window.dispatchEvent(new CustomEvent('fanxpulse:swap', { detail: { team: selectedTeam, tx: txHash } }));
-        }
-      } catch (e) {
-        // ignore
-      }
-      setPayAmount('');
-      setReceiveAmount('');
+    if (!txHash || isConfirming || !selectedTeam) {
+      return;
     }
-  }, [txHash, isConfirming, selectedTeam, payAmount, receiveAmount, tokenBalances]);
+
+    if (processedTxHashRef.current === txHash) {
+      return;
+    }
+
+    processedTxHashRef.current = txHash;
+
+    const received = Number(receiveAmount);
+
+    setTokenBalances((currentBalances) => {
+      const updated = {
+        ...currentBalances,
+        [selectedTeam]: (currentBalances[selectedTeam] || 0) + received,
+      };
+      localStorage.setItem('tokenBalances', JSON.stringify(updated));
+      return updated;
+    });
+
+    alert(`✅ Swap successful!\n\nTx: ${txHash}\n\n${payAmount} OKB → ${receiveAmount} ${selectedTeam}`);
+
+    // Notify other parts of the app (teams/leaderboard) to refresh on-chain stats
+    try {
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('fanxpulse:swap', { detail: { team: selectedTeam, tx: txHash } }));
+      }
+    } catch (e) {
+      // ignore
+    }
+
+    setPayAmount('');
+    setReceiveAmount('');
+  }, [txHash, isConfirming, selectedTeam, receiveAmount, payAmount]);
 
   if (!isMounted) {
     return <div className="text-slate-400">Loading...</div>;
