@@ -9,6 +9,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useWalletConnection } from '@/hooks/useWalletConnection';
 import { TEAMS, ALL_TEAMS } from '@/constants';
+import useSwapRecorder from '@/hooks/useSwapRecorder';
 
 interface TeamStats {
   momentum: number;
@@ -21,57 +22,32 @@ export default function TeamsPage() {
   const [isMounted, setIsMounted] = useState(false);
   const [teamStats, setTeamStats] = useState<Record<string, TeamStats>>({});
 
+  // Build a map of teamCode => token address for on-chain reads
+  const tokenMap: Record<string, `0x${string}`> = {};
+  ALL_TEAMS.forEach((code) => {
+    // getTeamTokenAddress is not imported here; read from env vars convention
+    const envKey = `NEXT_PUBLIC_${code}_TOKEN_ADDRESS`;
+    // @ts-ignore - access process.env dynamically
+    const addr = (process.env[envKey] || '0x') as `0x${string}`;
+    tokenMap[code] = addr;
+  });
+
+  const { stats: onchainStats, loading: onchainLoading, refresh } = useSwapRecorder(tokenMap, 15000);
+
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  // Fetch real team stats from GraphQL every 15 seconds
+  // Fetch on-chain stats via useSwapRecorder
   useEffect(() => {
     if (!isConnected) return;
-
-    const fetchTeamStats = async () => {
-      try {
-        const graphqlUrl = process.env.NEXT_PUBLIC_REAL_INDEXER_URL || 'http://localhost:4000/graphql';
-        
-        const query = `
-          query {
-            teams {
-              code
-              momentum
-              supporters
-              volume24h
-            }
-          }
-        `;
-
-        const response = await fetch(graphqlUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query }),
-        });
-
-        const data = await response.json();
-        
-        if (data.data?.teams) {
-          const stats: Record<string, TeamStats> = {};
-          data.data.teams.forEach((team: any) => {
-            stats[team.code] = {
-              momentum: team.momentum || 0,
-              supporters: team.supporters || 0,
-              volume: team.volume24h || 0,
-            };
-          });
-          setTeamStats(stats);
-        }
-      } catch (error) {
-        console.error('Failed to fetch team stats:', error);
-      }
-    };
-
-    fetchTeamStats();
-    const interval = setInterval(fetchTeamStats, 15000);
-    return () => clearInterval(interval);
-  }, [isConnected]);
+    // Map onchainStats shape to local TeamStats type
+    const mapped: Record<string, TeamStats> = {};
+    Object.entries(onchainStats || {}).forEach(([code, s]) => {
+      mapped[code] = { momentum: s.momentum, supporters: s.supporters, volume: s.volume24h };
+    });
+    setTeamStats(mapped);
+  }, [isConnected, onchainStats]);
 
   if (!isMounted) {
     return <div className="text-slate-400">Loading teams...</div>;

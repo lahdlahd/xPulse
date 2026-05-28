@@ -111,6 +111,14 @@ function TradeContent() {
       localStorage.setItem('tokenBalances', JSON.stringify(updated));
       
       alert(`✅ Swap successful!\n\nTx: ${txHash}\n\n${payAmount} OKB → ${receiveAmount} ${selectedTeam}`);
+      // Notify other parts of the app (teams/leaderboard) to refresh on-chain stats
+      try {
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('fanxpulse:swap', { detail: { team: selectedTeam, tx: txHash } }));
+        }
+      } catch (e) {
+        // ignore
+      }
       setPayAmount('');
       setReceiveAmount('');
     }
