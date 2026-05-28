@@ -58,8 +58,8 @@ const HeroSection: React.FC = () => {
           </motion.h1>
 
           <motion.p variants={itemVariants} className="text-xl text-slate-300 mb-4 leading-relaxed">
-            Experience the future of sports trading. Real-time momentum, instant swaps, and decentralized
-            on-chain reactions powered by Uniswap V4 Hooks.
+            Experience the future of sports trading. Real-time momentum, instant swaps, and transparent
+            on-chain transactions on X Layer blockchain.
           </motion.p>
 
           <motion.p variants={itemVariants} className="text-base text-slate-400 mb-8">

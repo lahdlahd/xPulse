@@ -9,7 +9,7 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: 'FanXPulse - World Cup Fan Token Trading',
-  description: 'Trade World Cup fan tokens with real-time momentum updates powered by Uniswap V4 Hooks on X Layer.',
+  description: 'Trade World Cup fan tokens with real-time momentum updates on X Layer blockchain.',
   icons: {
     icon: '/favicon.ico',
   },

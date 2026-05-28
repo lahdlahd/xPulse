@@ -98,8 +98,8 @@ const features = [
   },
   {
     icon: '🔗',
-    title: 'Uniswap V4 Hooks',
-    description: 'Powered by decentralized swaps with custom hooks that react to trading activity.',
+    title: 'On-Chain Trading',
+    description: 'Direct swaps recorded on-chain with instant confirmation and full transparency.',
   },
   {
     icon: '📈',

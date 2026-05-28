@@ -129,7 +129,7 @@ function TradeContent() {
           {selectedTeam ? `Trade ${selectedTeam}` : 'Trade Fan Tokens'}
         </h1>
         <p className="text-slate-400">
-          Swap fan tokens with real-time momentum updates powered by Uniswap V4 Hooks.
+          Swap fan tokens with real-time momentum updates recorded on the blockchain.
         </p>
       </div>
 
