@@ -9,8 +9,8 @@ const XLAYER_TESTNET = {
   rpcUrl: "https://testrpc.xlayer.tech",
 };
 
-// Hook contract address
-const HOOK_ADDRESS = "0x906407592cdAfE2F6DB4cC2710e1F515c416e352";
+// SwapRecorder contract address (use env or fallback to deployed address)
+const HOOK_ADDRESS = process.env.SWAP_RECORDER_ADDRESS || "0x31A125c28dE06309D84dE7f6A386548e1f7060b8";
 
 // Store indexed events in memory
 let indexedData = {
@@ -22,11 +22,26 @@ let indexedData = {
 };
 
 // Event ABIs - proper ABI format
+// Events (SwapRecorder)
+const SWAP_EXECUTED_EVENT = {
+  type: "event",
+  name: "SwapExecuted",
+  inputs: [
+    { name: "trader", type: "address", indexed: true },
+    { name: "teamToken", type: "address", indexed: true },
+    { name: "teamCode", type: "string", indexed: false },
+    { name: "okbAmount", type: "uint256", indexed: false },
+    { name: "tokenAmount", type: "uint256", indexed: false },
+    { name: "timestamp", type: "uint256", indexed: false },
+  ],
+};
+
 const MOMENTUM_CHANGED_EVENT = {
   type: "event",
   name: "MomentumChanged",
   inputs: [
-    { name: "team", type: "address", indexed: true },
+    { name: "teamToken", type: "address", indexed: true },
+    { name: "teamCode", type: "string", indexed: false },
     { name: "oldMomentum", type: "uint256", indexed: false },
     { name: "newMomentum", type: "uint256", indexed: false },
     { name: "timestamp", type: "uint256", indexed: false },
@@ -37,23 +52,10 @@ const SUPPORTER_POINTS_EVENT = {
   type: "event",
   name: "SupporterPointsAwarded",
   inputs: [
-    { name: "supporter", type: "address", indexed: true },
-    { name: "team", type: "address", indexed: true },
+    { name: "trader", type: "address", indexed: true },
+    { name: "teamToken", type: "address", indexed: true },
+    { name: "teamCode", type: "string", indexed: false },
     { name: "points", type: "uint256", indexed: false },
-    { name: "timestamp", type: "uint256", indexed: false },
-  ],
-};
-
-const SWAP_EXECUTED_EVENT = {
-  type: "event",
-  name: "SwapExecuted",
-  inputs: [
-    { name: "teamA", type: "address", indexed: true },
-    { name: "teamB", type: "address", indexed: true },
-    { name: "amount0In", type: "uint256", indexed: false },
-    { name: "amount1In", type: "uint256", indexed: false },
-    { name: "amount0Out", type: "uint256", indexed: false },
-    { name: "amount1Out", type: "uint256", indexed: false },
     { name: "timestamp", type: "uint256", indexed: false },
   ],
 };
@@ -86,13 +88,13 @@ async function indexEvents() {
     
     // Process MomentumChanged events
     for (const event of momentumEvents) {
-      const { team, newMomentum } = event.args;
-      const teamId = team.toLowerCase();
-      
+      const { teamToken, newMomentum } = event.args;
+      const teamId = teamToken.toLowerCase();
+    
       const existing = indexedData.teams.get(teamId);
       indexedData.teams.set(teamId, {
         id: teamId,
-        address: team,
+        address: teamToken,
         currentMomentum: Number(newMomentum),
         totalSupporters: existing?.totalSupporters || 0,
         totalVolume24h: existing?.totalVolume24h || "0",
@@ -123,24 +125,24 @@ async function indexEvents() {
 
     // Process SupporterPointsAwarded events
     for (const event of supporterEvents) {
-      const { supporter, team, points } = event.args;
-      const supporterId = supporter.toLowerCase();
+      const { trader, teamToken, points } = event.args;
+      const supporterId = trader.toLowerCase();
       
       const existing = indexedData.supporters.get(supporterId) || {
-        address: supporter,
-        totalPoints: 0n,
-        favoriteTeamAddress: team,
+        address: trader,
+        totalPoints: 0,
+        favoriteTeamAddress: teamToken,
       };
 
       indexedData.supporters.set(supporterId, {
         ...existing,
-        totalPoints: existing.totalPoints + points,
+        totalPoints: (existing.totalPoints || 0) + Number(points),
       });
 
       indexedData.supporterPoints.push({
         id: `${event.transactionHash}-${event.logIndex}`,
-        supporterAddress: supporter,
-        teamAddress: team,
+        supporterAddress: trader,
+        teamAddress: teamToken,
         pointsAwarded: Number(points),
         timestamp: Date.now(),
         blockNumber: Number(event.blockNumber),
@@ -148,7 +150,7 @@ async function indexEvents() {
       });
 
       // Increment team supporter count
-      const teamId = team.toLowerCase();
+      const teamId = teamToken.toLowerCase();
       const teamData = indexedData.teams.get(teamId);
       if (teamData) {
         teamData.totalSupporters = (teamData.totalSupporters || 0) + 1;
@@ -167,35 +169,27 @@ async function indexEvents() {
 
     // Process SwapExecuted events
     for (const event of swapEvents) {
-      const { teamA, teamB, amount0In, amount1In } = event.args;
+      const { trader, teamToken, teamCode, okbAmount, tokenAmount } = event.args;
 
       indexedData.swaps.push({
         id: `${event.transactionHash}-${event.logIndex}`,
-        teamAAddress: teamA,
-        teamBAddress: teamB,
-        amount0In: Number(amount0In),
-        amount1In: Number(amount1In),
+        traderAddress: trader,
+        teamAddress: teamToken,
+        teamCode: teamCode || null,
+        okbAmount: Number(okbAmount),
+        tokenAmount: Number(tokenAmount),
         timestamp: Date.now(),
         blockNumber: Number(event.blockNumber),
         transactionHash: event.transactionHash,
       });
 
-      // Update team volumes
-      const teamAId = teamA.toLowerCase();
-      const teamBId = teamB.toLowerCase();
-
-      const teamAData = indexedData.teams.get(teamAId);
-      if (teamAData) {
-        const currentVolume = BigInt(teamAData.totalVolume24h || "0");
-        teamAData.totalVolume24h = (currentVolume + amount0In).toString();
-        teamAData.totalSwaps = (teamAData.totalSwaps || 0) + 1;
-      }
-
-      const teamBData = indexedData.teams.get(teamBId);
-      if (teamBData) {
-        const currentVolume = BigInt(teamBData.totalVolume24h || "0");
-        teamBData.totalVolume24h = (currentVolume + amount1In).toString();
-        teamBData.totalSwaps = (teamBData.totalSwaps || 0) + 1;
+      // Update team volume and swaps
+      const teamId = teamToken.toLowerCase();
+      const teamData = indexedData.teams.get(teamId);
+      if (teamData) {
+        const currentVolume = BigInt(teamData.totalVolume24h || "0");
+        teamData.totalVolume24h = (currentVolume + BigInt(okbAmount)).toString();
+        teamData.totalSwaps = (teamData.totalSwaps || 0) + 1;
       }
     }
 

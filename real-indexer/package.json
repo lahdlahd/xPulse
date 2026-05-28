@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "node --watch listener.js",
-    "start": "node listener.js",
+    "start": "node start-railway.js",
     "graphql": "node graphql-server.js",
     "graphql:watch": "node --watch graphql-server.js",
     "server": "node graphql-simple-server.js",

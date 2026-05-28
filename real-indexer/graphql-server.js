@@ -222,8 +222,10 @@ async function startServer() {
     resolvers,
   });
 
+  const port = Number(process.env.PORT || process.env.PORT_GRAPHQL || 4000);
+
   const { url } = await startStandaloneServer(server, {
-    listen: { port: 4000 },
+    listen: { port },
   });
 
   console.log(`🚀 GraphQL Server running at ${url}`);

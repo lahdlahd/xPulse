@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "graphql-simple-server.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "graphql-simple-server.js"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
+}
