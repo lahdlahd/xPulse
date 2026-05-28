@@ -184,9 +184,9 @@ function TradeContent() {
               </div>
 
               <div className="flex justify-center">
-                <button className="p-2 rounded-full bg-slate-700 hover:bg-slate-600 transition-colors">
+                <div className="p-2 rounded-full bg-slate-700/60 text-slate-400 cursor-default" aria-hidden="true">
                   ⇅
-                </button>
+                </div>
               </div>
 
               <div>

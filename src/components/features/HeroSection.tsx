@@ -7,6 +7,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useWalletConnection } from '@/hooks/useWalletConnection';
 
@@ -73,9 +74,9 @@ const HeroSection: React.FC = () => {
                   <ConnectButton accountStatus="button" chainStatus="none" />
                 </div>
               ) : (
-                <button className="btn-primary text-lg px-8 py-3">
+                <Link href="/trade" className="btn-primary text-lg px-8 py-3 inline-flex items-center justify-center">
                   Start Trading
-                </button>
+                </Link>
               )
             ) : (
               <div className="w-48 h-10" /> // Placeholder during hydration
