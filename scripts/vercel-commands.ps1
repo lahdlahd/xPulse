@@ -1,0 +1,43 @@
+# PowerShell helper: run these to add/update Vercel env vars interactively
+# Requires Vercel CLI: `npm i -g vercel` and you must be logged in (`vercel login`)
+
+Write-Host "Run each command below and paste the value when prompted by Vercel CLI:`n"
+
+vercel env add NEXT_PUBLIC_SWAP_RECORDER_ADDRESS production    # value: 0x31A125c28dE06309D84dE7f6A386548e1f7060b8
+
+vercel env add NEXT_PUBLIC_ARG_TOKEN_ADDRESS production       # value: 0xAb78f30c73aF4479c7bC1A60ed123087c23d076b
+vercel env add NEXT_PUBLIC_AUS_TOKEN_ADDRESS production       # value: 0xA866748Bb8F390E43957043792c31B72Ca8abF42
+vercel env add NEXT_PUBLIC_BEL_TOKEN_ADDRESS production       # value: 0x20E008b0688A4493837472ACeC53B5B8C517841e
+vercel env add NEXT_PUBLIC_BRA_TOKEN_ADDRESS production       # value: 0x13b799fF7C8Da7845d7a53c9b89E9EC82Db74eB0
+vercel env add NEXT_PUBLIC_CMR_TOKEN_ADDRESS production       # value: 0xcE0D1c5e11dc264188F0d70d54037C843521A3DE
+vercel env add NEXT_PUBLIC_CAN_TOKEN_ADDRESS production       # value: 0x0FF1e642bc987670443fB36598f468b87eFC7F3A
+vercel env add NEXT_PUBLIC_CRC_TOKEN_ADDRESS production       # value: 0x741fEAf67e1CaC128F4dFfa447726b8FC2c5fD28
+vercel env add NEXT_PUBLIC_CRO_TOKEN_ADDRESS production       # value: 0xf23e3Cb19f58A46Ea70174F4dBC96C79A051C830
+vercel env add NEXT_PUBLIC_DEN_TOKEN_ADDRESS production       # value: 0x1D5b81391BaBbf211517fA6e0c99a44c66ADBcF3
+vercel env add NEXT_PUBLIC_ECU_TOKEN_ADDRESS production       # value: 0x16D7FE50cFB64ffa567A2b9fbb37B7C9841f2ed0
+vercel env add NEXT_PUBLIC_ENG_TOKEN_ADDRESS production       # value: 0x892044C7F43658F4c02262625601464e6F62C470
+vercel env add NEXT_PUBLIC_FRA_TOKEN_ADDRESS production       # value: 0x67061C5c1EB9C8E673c4BF524E4F5ABD1a73a6A8
+vercel env add NEXT_PUBLIC_DEU_TOKEN_ADDRESS production       # value: 0xF7EF6cd18551667591c9DeBd1652178cDc7523EA
+vercel env add NEXT_PUBLIC_GHA_TOKEN_ADDRESS production       # value: 0x40EC4e527fE6f2ec8832bb893be85De76d3Db596
+vercel env add NEXT_PUBLIC_IRN_TOKEN_ADDRESS production       # value: 0x2a88Bd20B496C4D18431F2928c49214C726052cb
+vercel env add NEXT_PUBLIC_JPN_TOKEN_ADDRESS production       # value: 0xaE9615A8cd60ce022D94377e81Ffa2A93944dd29
+vercel env add NEXT_PUBLIC_MEX_TOKEN_ADDRESS production       # value: 0x7DF2c31d8DA8DF673FF8359e99D7aE08b3a216a6
+vercel env add NEXT_PUBLIC_MOR_TOKEN_ADDRESS production       # value: 0xE1bEB6BeF1c64bD5746bb28BDf850476F6dd9328
+vercel env add NEXT_PUBLIC_NED_TOKEN_ADDRESS production       # value: 0x314b0BB5a53a5af2fB3B51160DD5D3c631dCf0f7
+vercel env add NEXT_PUBLIC_POL_TOKEN_ADDRESS production       # value: 0xBaf4EfEE7e30Ea1C7eAD7908222671d5a05EF60B
+vercel env add NEXT_PUBLIC_POR_TOKEN_ADDRESS production       # value: 0x20Dc82d2C3dD56999627465f19281b7d561Ab793
+vercel env add NEXT_PUBLIC_QAT_TOKEN_ADDRESS production       # value: 0x473f076771241D66fd136E8FEC5b048FC4C25e4a
+vercel env add NEXT_PUBLIC_KOR_TOKEN_ADDRESS production       # value: 0x52B4287bf91074dC4626ba3390E2433345945928
+vercel env add NEXT_PUBLIC_SAU_TOKEN_ADDRESS production       # value: 0xa864b39e70B2088199b9C2420C4c56dd613cEa5e
+vercel env add NEXT_PUBLIC_SRB_TOKEN_ADDRESS production       # value: 0xB847841ffaeD4495E64E16Bd763838a14b7F0b04
+vercel env add NEXT_PUBLIC_SEN_TOKEN_ADDRESS production       # value: 0x5d90d7305b3C4360b5Ea8ACEcCb527eE85e76d28
+vercel env add NEXT_PUBLIC_ESP_TOKEN_ADDRESS production       # value: 0xee8F86Ec65e1E2Ce87320b4227F1b8DCCe4e3F81
+vercel env add NEXT_PUBLIC_SUI_TOKEN_ADDRESS production       # value: 0xE7c3F62cC526ab23F625FD509184Cd87bd889967
+vercel env add NEXT_PUBLIC_TUN_TOKEN_ADDRESS production       # value: 0x0E130D9213eb308a5034c5898DC93A033a204BE1
+vercel env add NEXT_PUBLIC_USA_TOKEN_ADDRESS production       # value: 0x47E755a32816C35cf7d04e273898E736B77A6CB1
+vercel env add NEXT_PUBLIC_URY_TOKEN_ADDRESS production       # value: 0x6441f7643A5514025Bd7506C52B0b06bC6F32287
+vercel env add NEXT_PUBLIC_WAL_TOKEN_ADDRESS production       # value: 0x6C0434F883eC0d1b5cEC30585D54B8a17339064B
+
+vercel env add NEXT_PUBLIC_REAL_INDEXER_URL production        # value: https://fanxpulse-listener.railway.app
+
+Write-Host "\nDone. After adding env vars, redeploy the Vercel project or trigger a new deploy from GitHub."
