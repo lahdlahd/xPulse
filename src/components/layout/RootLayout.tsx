@@ -5,7 +5,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { WagmiProvider } from 'wagmi';
 import { RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -28,6 +28,21 @@ interface RootLayoutProps {
 // Toast Provider Wrapper
 function WithToastProvider({ children }: { children: React.ReactNode }) {
   const { toasts, showNotification, removeToast } = useToastNotifications();
+
+  useEffect(() => {
+    const handler = (event: Event) => {
+      const customEvent = event as CustomEvent<{ message?: string; type?: 'success' | 'info' | 'warning' | 'error' }>;
+      const message = customEvent.detail?.message;
+      if (!message) {
+        return;
+      }
+
+      showNotification(customEvent.detail?.message || '', customEvent.detail?.type || 'info');
+    };
+
+    window.addEventListener('fanxpulse:notify', handler);
+    return () => window.removeEventListener('fanxpulse:notify', handler);
+  }, [showNotification]);
 
   return (
     <>

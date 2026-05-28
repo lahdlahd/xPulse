@@ -135,7 +135,14 @@ function TradeContent() {
       return updated;
     });
 
-    alert(`✅ Swap successful!\n\nTx: ${txHash}\n\n${payAmount} OKB → ${receiveAmount} ${selectedTeam}`);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('fanxpulse:notify', {
+        detail: {
+          message: `✅ Swap successful! Tx: ${txHash} | ${payAmount} OKB → ${receiveAmount} ${selectedTeam}`,
+          type: 'success',
+        },
+      }));
+    }
 
     // Notify other parts of the app (teams/leaderboard) to refresh on-chain stats
     try {
