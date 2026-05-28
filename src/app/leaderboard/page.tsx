@@ -97,7 +97,7 @@ function LeaderboardContent() {
             <div>
               <h1 className="text-4xl font-bold text-slate-100 mb-2">Momentum Leaderboard</h1>
               <p className="text-slate-400">
-                Real-time team rankings powered by Uniswap V4 Hook activity.
+                Real-time team rankings based on trading activity.
               </p>
             </div>
             {lastUpdate && (

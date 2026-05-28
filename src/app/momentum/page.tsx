@@ -123,7 +123,7 @@ function MomentumContent() {
             <div>
               <h1 className="text-4xl font-bold text-slate-100 mb-2">Match Momentum</h1>
               <p className="text-slate-400">
-                Real-time momentum updates powered by Uniswap V4 Hook activity.
+                Real-time momentum updates from on-chain trading activity.
               </p>
             </div>
             {lastUpdate && (
